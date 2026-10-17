@@ -1,12 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 LAB=$(cd "$(dirname "$0")" && pwd)
+cd "$LAB"
 mkdir -p "$LAB/run"
 
 start_process() {
     local namespace=$1 name=$2 script=$3
     shift 3
-    if [[ -f "$LAB/run/$name.pid" ]] && kill -0 "$(cat "$LAB/run/$name.pid")" 2>/dev/null; then
+    if [[ -f "$LAB/run/$name.pid" ]] &&
+        kill -0 "$(cat "$LAB/run/$name.pid")" 2>/dev/null &&
+        [[ $(ip netns identify "$(cat "$LAB/run/$name.pid")" 2>/dev/null) == "$namespace" ]]; then
         echo "$name is already running"
         return
     fi
@@ -34,7 +37,7 @@ case "${1:-help}" in
     status)
         namespace=${2:?Supply namespace}
         address=${3:?Supply IP address}
-        ip netns exec "$namespace" python3 -c 'import sys; from superviser import get_ied_status; print(get_ied_status(sys.argv[1]))' "$address"
+        ip netns exec "$namespace" python3 "$LAB/supervisor.py" --address "$address"
         ;;
     stop)
         for namespace in lab-s1 lab-led1 lab-ld1 lab-s2 lab-led2 lab-ld2; do
@@ -51,8 +54,10 @@ case "${1:-help}" in
             ip link del "$bridge" 2>/dev/null || true
         done
         rm -f "$LAB"/run/*.log "$LAB"/run/*.json
+        rm -f "$LAB/logical_devices.conf"
         printf '5\n' > "$LAB/run/voltage1"
         printf '5\n' > "$LAB/run/voltage2"
         ;;
-    *) echo 'Usage: bash lab.sh start 1|2 | voltage 1|2 VALUE | status NAMESPACE IP | stop | reset' ;;
+    help) echo 'Usage: bash lab.sh start 1|2 | voltage 1|2 VALUE | status NAMESPACE IP | stop | reset' ;;
+    *) echo 'Unknown command. Run bash lab.sh help.' >&2; exit 1 ;;
 esac

@@ -13,7 +13,17 @@
       {"title": "7. Break, observe, repair", "text": "steps/07.md", "verify": "checks/07.sh"}
     ],
     "finish": {"text": "finish.md"},
-    "assets": {"host01": [{"file": "*", "target": "/root/energy-lab/"}]}
+    "assets": {
+      "host01": [
+        {"file": "helpers.py", "target": "/root/energy-lab/"},
+        {"file": "sensor.py", "target": "/root/energy-lab/"},
+        {"file": "logical_device.py", "target": "/root/energy-lab/"},
+        {"file": "alert_led.py", "target": "/root/energy-lab/"},
+        {"file": "supervisor.py", "target": "/root/energy-lab/"},
+        {"file": "lab.sh", "target": "/root/energy-lab/"},
+        {"file": "check.py", "target": "/root/energy-lab/"}
+      ]
+    }
   },
   "backend": {"imageid": "ubuntu"}
 }

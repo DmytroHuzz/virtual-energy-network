@@ -1,6 +1,8 @@
 import argparse
 import socket
 
+from helpers import ETHERTYPE
+
 
 class LED:
     def __init__(self, name: str, interface: str):
@@ -18,16 +20,15 @@ class LED:
         return self.state
 
     def listen_command(self):
-        # Listen for L2 multicast commands on the specified interface and update the LED state accordingly
-
+        """Update the simulated LED from alarm commands on its sensor LAN."""
         with socket.socket(
-            socket.AF_PACKET, socket.SOCK_RAW, socket.htons(0x88B5)
+            socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETHERTYPE)
         ) as sock:
             sock.bind((self.interface, 0))
 
             while True:
                 frame, _ = sock.recvfrom(65535)
-                if len(frame) < 14 or frame[12:14] != b"\x88\xb5":
+                if len(frame) < 14 or frame[12:14] != ETHERTYPE.to_bytes(2, "big"):
                     continue
 
                 payload = frame[14:].rstrip(b"\x00")
@@ -40,7 +41,7 @@ class LED:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="LED arguments")
+    parser = argparse.ArgumentParser(description="Listen for local alarm commands")
     parser.add_argument("name", type=str, help="Name of the LED")
     parser.add_argument("interface", type=str, help="Network interface for the LED")
     args = parser.parse_args()

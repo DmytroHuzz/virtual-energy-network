@@ -12,11 +12,7 @@ class Sensor:
         self.interface = interface
 
     def read_value(self) -> int:
-        # Read the sensor value from the source
-        value = -1
-        with open(self.source, "r") as f:
-            value = int(f.read().strip())
-        return value
+        return int(self.source.read_text().strip())
 
     def send_value(self, value: int) -> None:
         payload = str(value).encode()
@@ -24,8 +20,7 @@ class Sensor:
 
 
 if __name__ == "__main__":
-    # Arguments
-    parser = argparse.ArgumentParser(description="Sensor arguments")
+    parser = argparse.ArgumentParser(description="Publish a sensor value once per second")
     parser.add_argument("name", type=str, help="Name of the sensor")
     parser.add_argument("source", type=Path, help="Source path of the sensor")
     parser.add_argument(

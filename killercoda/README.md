@@ -1,41 +1,70 @@
-# Linux virtual networking for energy developers
+# Maintain the energy networking tutorial
 
-[Start the published tutorial](https://killercoda.com/dmytrohuzz/course/killercoda/virtual-energy-network) · [GitHub repository](https://github.com/DmytroHuzz/virtual-energy-network)
+[Live tutorial](https://killercoda.com/dmytrohuzz/course/killercoda/virtual-energy-network) · [Repository](https://github.com/DmytroHuzz/virtual-energy-network)
 
-The scenario in `virtual-energy-network/` follows the three stages in the project README: one Sensor LAN, multiple LANs connected through logical devices, and supervisor access through a translating gateway.
+## Edit the source
 
-Seven checkpoints cover namespaces, veth and bridges, Ethernet alarm traffic, operator IP multicast, routing, DNAT and troubleshooting. Learners type or click the actual network commands. Only package installation and file delivery are automated. Runtime helpers start/stop Python applications, change input values and query status; they do not create the topology.
+Edit the programs directly in `virtual-energy-network/assets/`. They are both the application source and the files delivered to learners; there is no second copy to synchronize. Edit lessons in `steps/` and checkpoint entry points in `checks/`. Keep command examples, filenames and the manifest consistent.
 
-## Build
+The supported runtime is disposable Ubuntu 24.04 with root access. The applications require Python 3.10 or later and use only its standard library. Raw Ethernet sockets and namespace operations require Linux and elevated privileges. Source validation and packaging also work on macOS.
 
-From the project root, run:
+## Validate and package
+
+From the repository root:
 
 ```bash
+python3 killercoda/validate.py
 python3 killercoda/build.py
 ```
 
-This copies the current five Python programs into the scenario's flat `assets/` directory, generates the seven check wrappers, and writes `killercoda/virtual-energy-network.tar.gz`. Rebuild after changing the source programs. The original README remains the project brief; the scenario Markdown is the learner-facing lesson.
+Validation checks manifest references, asset delivery, local Markdown links, Python and Bash syntax, CLI entry points and the seven checkpoint wrappers. It extracts the executable lesson blocks into `dist/walkthrough.sh`. Packaging runs validation and creates `dist/virtual-energy-network.tar.gz`. Generated outputs and runtime files are ignored by Git.
 
-The sample applications needed two compatibility fixes: the LED consumes `LOCAL_ON`/`LOCAL_OFF`, and the logical device ignores nonnumeric Ethernet frames instead of terminating its sensor listener. No third-party Python dependencies are needed.
+GitHub Actions runs static validation on pushes and pull requests. Static checks cannot prove packet forwarding; run the walkthrough after changing programs, topology commands or checkpoints.
 
-## Publish on Killercoda
+## Run the full walkthrough
 
-Copy the entire `virtual-energy-network/` folder into the GitHub repository and branch registered in your Killercoda Creator settings. Commit and push it. If that repository has `structure.json`, add the new folder there; otherwise it may be excluded. Configure repository access and the update webhook through Killercoda if they are not already present. Do not publish the archive or build script as scenarios.
+Use a fresh Ubuntu VM or Killercoda playground with root access. The walkthrough resets the lab's reserved namespaces and bridges, so use a disposable environment.
 
-See the official [creator documentation](https://killercoda.com/creators) and [repository setup](https://killercoda.com/creators/get-started). The manifest uses the documented Ubuntu backend, asset delivery, intro setup scripts, executable Markdown blocks, and per-step verification scripts.
+Copy the generated archive and `dist/walkthrough.sh` into that environment, then run:
 
-## Validation
+```bash
+mkdir -p /root/scenario-source /root/energy-lab
+tar -xzf virtual-energy-network.tar.gz -C /root/scenario-source
+cp /root/scenario-source/virtual-energy-network/assets/* /root/energy-lab/
+bash /root/scenario-source/virtual-energy-network/background.sh
+bash walkthrough.sh
+```
 
-Run `python3 killercoda/validate.py` on any host for manifest paths, Python/Bash syntax and Markdown command checks. Run the generated `walkthrough.sh` inside a disposable root Ubuntu environment with `iproute2`, `iptables`, `tcpdump`, `iputils-ping` and Python installed. It executes the same commands learners see, runs every checkpoint, and exercises negative checks and recovery. Never run it on the macOS host.
+The walkthrough executes learner commands and runs every checkpoint. It also verifies that an empty topology, a disconnected LED interface and a missing return route fail, then restores the network. Packet captures are bounded; the NAT capture runs alongside a supervisor query so both interfaces show traffic.
 
-Verification reads real namespace/link state, running processes, LED logs, multicast-derived alarm state and TCP status responses, including both NAT mappings. It retries briefly for asynchronous publication. It does not grade prose answers, prove a learner observed every capture, or prove all forms of network isolation.
+Checkpoints inspect links, processes, LED logs, multicast-derived alarm state, TCP responses and NAT rules. They retry briefly for sensor publication. They do not grade prose answers or prove every isolation property. After testing, use `bash /root/energy-lab/lab.sh reset` to leave a clean environment.
 
-Addresses `192.0.2.0/24` simulate the WAN inside namespaces; nothing is exposed to the actual Internet. Gateway firewall changes are scoped to `lab-gw`. Reset removes the eight `lab-*` namespaces and three `br-*` bridges reserved for this lab.
+Reserved names: `lab-s1`, `lab-s2`, `lab-ld1`, `lab-ld2`, `lab-led1`, `lab-led2`, `lab-gw`, `lab-sup`, `br-s1`, `br-s2` and `br-op`. Firewall changes occur inside `lab-gw`. The WAN subnet `192.0.2.0/24` is simulated inside the lab; nothing is published to the real Internet.
 
-The protocols are educational. This lab does not implement IEC 61850 or production SCADA, electrical protection behavior, authentication, reliable alarm delivery or time synchronization. Plan for 45–60 minutes; classroom pacing still needs a human pilot.
+## Publish changes
 
-## Technical references
+The repository's `main` branch is connected to Killercoda profile `dmytrohuzz`. A read-only deploy key allows cloning, and an authenticated push webhook triggers updates. Keep credentials in service settings, never in the repository.
 
+After validation and runtime checks, commit and push. Check sync status in Killercoda Creator settings, then launch a fresh scenario and verify assets, the Ready message, executable Markdown and a native Check button. Running environments do not automatically receive changed files. Classroom pacing and learner comprehension still need a human pilot.
+
+For another creator profile, register your own repository and branch, add its read-only deploy key, and configure the webhook. Preserve the scenario folder path to keep lesson links working. If you add a root `structure.json`, include the scenario there.
+
+## Protocols and application behavior
+
+| Network | Format | Destination |
+|---|---|---|
+| Sensor LAN | Numeric ASCII value or `LOCAL_ON` / `LOCAL_OFF` in an experimental Ethernet frame | MAC `03:00:00:00:00:01`, EtherType `0x88b5` |
+| Operator LAN | `<device>_ON` / `<device>_OFF` over UDP | `224.0.0.1:10000`, TTL 1 |
+| Supervisor | `GET` plus a newline; one newline-delimited JSON response | Logical-device IPv4 address, TCP port 10000 |
+
+The sensor publishes once per second. Measurements at or above the threshold trigger an alarm. Logical devices repeatedly publish their local state and track received operator alarms separately; a remote alarm does not drive the local LED. Status queries use timeouts and handle TCP segmentation. Shared logical-device state is protected by a lock.
+
+The raw-socket listeners can exit when their interface goes down. Lesson 7 demonstrates that repairing a link may also require restarting an application. The example has no reliable delivery, state expiry or listener-health reporting; those are useful follow-up exercises.
+
+## References
+
+- [Killercoda creator documentation](https://killercoda.com/creators)
+- [Killercoda repository setup](https://killercoda.com/creators/get-started)
 - [Linux network namespaces manual](https://www.man7.org/linux/man-pages/man7/network_namespaces.7.html)
-- [IPv4 link-local multicast scope, RFC 5771 section 4](https://www.rfc-editor.org/rfc/rfc5771.html#section-4)
+- [Link-local IPv4 multicast scope, RFC 5771 section 4](https://www.rfc-editor.org/rfc/rfc5771.html#section-4)
 - [Netfilter destination NAT explanation](https://www.netfilter.org/documentation/HOWTO/NAT-HOWTO-6.html)

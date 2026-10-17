@@ -1,56 +1,53 @@
-# Virtual energy network
+# Build an energy network with Linux
 
-[Start the hands-on Killercoda tutorial](https://killercoda.com/dmytrohuzz/course/killercoda/virtual-energy-network)
+The grid is a network of networks. Software that monitors, controls or simulates it needs to work with those boundaries too. Let's build them on one Linux machine, starting with the tools underneath containers.
 
-For the seven-step lesson, build instructions and instructor notes, see [killercoda/README.md](killercoda/README.md).
+**[Start the hands-on tutorial on Killercoda](https://killercoda.com/dmytrohuzz/course/killercoda/virtual-energy-network)**
 
-==============================
-Intro
-==============================
-As we already know the grid is a network of networks. 
+This tutorial is for software developers working in the energy industry. You need basic shell and Python knowledge. Allow 45–60 minutes; the browser environment supplies Ubuntu, root access and the required tools.
 
-Therefore, when we work with software that need to follow the structure of the system: control, operate, protect, simulate,
-etc, we need to work with network of networks as well. And our system becames the system of systems. 
-In order to be able to recreate that topology we can use hardware and rebuild it as connections of servers, nodes, LANs, switches and routers.
-But there is another way to achive the same. We can use only one machine and thanksfully to virtualisations tools of Linux we can reconstract the complicated network locally. We can use docker for that, but I would really like to show the firts principles that lays behind all virtualisation tools on Linux
-Let's go!
+## What you build
 
-==============================
-THE LOCAL NETWORK
-==============================
+Start with a voltage sensor, a logical device and a simulated alarm LED on one LAN. Add a second bay and an operator LAN so the logical devices can share alarm information. Finally, query their status from a supervisor through a routing and NAT gateway.
 
-Let's build a system.
-One LAN (let's call it Sensor LAN) in which we have:
-1) One source of voltage and a SENSOR that measures voltage every second and send data into local network as l2 multicast message. 
-2) One Logical device that listens the local network and moment when SENSOR's data reaches some threshold triggers allert and sends a multicast message into the LAN that alert is triggered. 
-3) One LED with microcontroller that listens to the LAN and moment when alert is triggered it turns on. 
+| Lesson | Practice |
+|---|---|
+| 1. Separate the devices | Network namespaces and loopback interfaces |
+| 2. Connect the Sensor LAN | veth pairs and a Linux bridge |
+| 3. Follow a measurement | Ethernet multicast, packet capture and local alarms |
+| 4. Add another bay | Separate LANs and UDP multicast on the operator LAN |
+| 5. Connect a supervisor | IPv4 addressing, forwarding and return routes |
+| 6. Publish status | Destination NAT, connection tracking and firewall counters |
+| 7. Diagnose faults | Broken links, stopped processes and missing routes |
 
-We can easily simulate this system on one PC by using simple scripts. 
+Every lesson includes runnable commands, questions and a checkpoint. The setup supplies the programs; you build the network yourself.
 
-==============================
-Multiple LOCAL networks
-==============================
-Now let's make it more complicated. 
+## Repository layout
 
-We have multiple LANs like this. More than that. We have one additional LAN (Operator LAN) where
-1) Each Logical device of all local networks is connected to with another network interface. 
-2) Each time when the Logica device triggers alert in the local network it also sends L3 multicast message that notify about it.
-3) All Logical devices in the LAN receive that information and save it Locally
+```text
+killercoda/
+  README.md                      # Maintainer and validation instructions
+  build.py                       # Package the scenario
+  validate.py                    # Validate source and generate a walkthrough
+  virtual-energy-network/
+    index.json                   # Killercoda scenario definition
+    intro.md, finish.md           # Opening and closing lessons
+    steps/                       # Seven learner exercises
+    checks/                      # Native checkpoint entry points
+    background.sh, foreground.sh # Tool installation and readiness
+    assets/                      # The single source of truth for lab programs
+```
 
-Now for that setup we need multiple devices with multiple interfaces and multiple switches.
-But now we can look into how we can make it locally by using network namespaces and veth.
+The five applications live only in `assets/`: `sensor.py`, `logical_device.py`, `alert_led.py`, `supervisor.py` and `helpers.py`. `lab.sh` manages their processes and input values; `check.py` verifies the exercises. Generated archives and historical copies are excluded from the published source tree. See the [maintainer guide](killercoda/README.md) for editing, validation and publication.
 
+## What the example represents
 
-==============================
-Befind the NAT
-==============================
+The device roles introduce ideas used in substation and SCADA networks. The programs exchange numeric Ethernet payloads, UDP alarm messages and newline-delimited JSON status over TCP. They do not implement IEC 61850 GOOSE, Sampled Values, MMS or a production SCADA service.
 
-Now let's make it more difficult. Let's add one more requirements. 
-The superviser should be able to connect to our system from global LAN by using public IPs and get the status of each device. 
-therefore now we need to add a gateway that would translate global IPs into local once and redirect requests to defined Logical devices. 
-In the physical word we would need a router with NAT settings. 
-But let's see how we can use iptables and virtual bridge for that. 
+Sensor values are integers read from files, without calibrated electrical units. The LED is an in-memory state reported in a log. Namespaces share the host's kernel and filesystem. Alarm delivery has no authentication, persistence or expiry; a stopped sender can leave stale state. These choices keep packet flow and network boundaries visible while you learn the tools.
 
+## Run and reset
 
-The end topology:
-![alt text](<network tompology-1.jpg>)
+Use the [Killercoda tutorial](https://killercoda.com/dmytrohuzz/course/killercoda/virtual-energy-network) for the supported environment. Its setup installs tools and opens `/root/energy-lab`. Follow lessons in order and wait for **Ready** before running commands.
+
+Inside that disposable environment, `bash /root/energy-lab/lab.sh reset` stops the lab applications and removes its named namespaces, bridges, logs and generated configuration. Return to lesson 1 to rebuild it. Download anything you want to keep before the environment expires.

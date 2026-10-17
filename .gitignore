@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+/dist/
+/killercoda/virtual-energy-network/assets/run/
+/killercoda/virtual-energy-network/assets/logical_devices.conf

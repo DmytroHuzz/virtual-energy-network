@@ -9,13 +9,13 @@ By the end you will be able to explain what a namespace isolates, connect device
 Allow **45–60 minutes**. You need basic shell and Python knowledge; no Kubernetes or Docker experience is required. Open a second terminal tab for packet captures if useful. Commands run as root in this disposable environment.
 
 ```text
-Sensor1 ─┐                              ┌─ Sensor2
-         ├─ br-s1 ─ LD1 ─┐  ┌─ LD2 ─ br-s2 ┤
-LED1 ────┘              br-op             └─ LED2
-                          │
-                    gateway (NAT)
-                          │
-                      supervisor
+Sensor1 ─┐
+         br-s1 ─ LD1 ─┐
+LED1 ────┘           │
+                   br-op ─ gateway (NAT) ─ supervisor
+Sensor2 ─┐           │
+         br-s2 ─ LD2 ─┘
+LED2 ────┘
 ```
 
 The Python programs are deliberately small. They exchange numeric Ethernet payloads, alarm messages over UDP multicast, and JSON over TCP. These are teaching protocols, not IEC 61850 GOOSE, Sampled Values, MMS or a production SCADA implementation. A namespace gives a separate network stack; it does not create a separate machine, filesystem or clock. The LED is a software state with a log, not physical hardware.
