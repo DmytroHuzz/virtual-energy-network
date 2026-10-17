@@ -35,6 +35,15 @@ def attached(name, bridge):
     up(None, name)
 
 
+def address(namespace, name, expected):
+    interfaces = json.loads(command("ip", "-n", namespace, "-j", "-4", "address", "show", "dev", name))
+    addresses = {
+        f"{entry['local']}/{entry['prefixlen']}"
+        for device in interfaces for entry in device["addr_info"]
+    }
+    require(expected in addresses, f"Assign {expected} to {namespace}/{name}")
+
+
 def status(namespace, address):
     script = (
         "import json,sys; "
@@ -69,28 +78,35 @@ def verify(stage):
         up(namespace, "lo")
     if stage < 2:
         return
+    up("lab-s1", "eth0")
+    up(None, "s1-p")
+    if stage < 3:
+        return
     up(None, "br-s1")
     for port in ("s1-p", "ld1-p", "led1-p"):
         attached(port, "br-s1")
     for namespace in ("lab-s1", "lab-ld1", "lab-led1"):
         up(namespace, "eth0")
-    if stage < 3:
+    if stage < 4:
         return
     process("lab-ld1", "logical_device.py")
     process("lab-s1", "sensor.py")
     first = status("lab-ld1", "10.20.0.11")
     require(first["alerted_local"] is True, "Set bay 1 voltage to 15")
     led(1, "on")
-    if stage < 4:
+    if stage < 5:
         return
-    for bridge in ("br-s2", "br-op"):
-        up(None, bridge)
+    up(None, "br-s2")
     for port in ("s2-p", "ld2-p", "led2-p"):
         attached(port, "br-s2")
+    for namespace in ("lab-s2", "lab-ld2", "lab-led2"):
+        up(namespace, "lo")
+        up(namespace, "eth0")
+    if stage < 6:
+        return
+    up(None, "br-op")
     for port in ("op1-p", "op2-p"):
         attached(port, "br-op")
-    for namespace in ("lab-s2", "lab-ld2", "lab-led2"):
-        up(namespace, "eth0")
     up("lab-ld1", "eth1")
     up("lab-ld2", "eth1")
     process("lab-s2", "sensor.py")
@@ -99,25 +115,31 @@ def verify(stage):
     require("LD1" in second["alerted_global"], "LD2 has not received LD1 multicast")
     require("LD2" not in first["alerted_global"], "Clear bay 2's alarm")
     led(2, "off")
-    if stage < 5:
+    if stage < 7:
         return
     for namespace in ("lab-gw", "lab-sup"):
         up(namespace, "lo")
         up(namespace, "eth0")
     up("lab-gw", "eth1")
+    attached("gw-p", "br-op")
+    address("lab-gw", "eth0", "10.20.0.1/24")
+    address("lab-gw", "eth1", "192.0.2.1/24")
+    address("lab-sup", "eth0", "192.0.2.2/24")
+    if stage < 8:
+        return
     require(
         command("ip", "netns", "exec", "lab-gw", "sysctl", "-n", "net.ipv4.ip_forward").strip() == "1",
         "Enable forwarding inside lab-gw",
     )
-    require(status("lab-sup", "10.20.0.11")["name"] == "LD1", "Private address should reach LD1")
-    require(status("lab-sup", "10.20.0.12")["name"] == "LD2", "Private address should reach LD2")
-    if stage < 6:
+    if stage == 8:
+        require(status("lab-sup", "10.20.0.11")["name"] == "LD1", "Private address should reach LD1")
+        require(status("lab-sup", "10.20.0.12")["name"] == "LD2", "Private address should reach LD2")
         return
     require(status("lab-sup", "192.0.2.10")["name"] == "LD1", "First WAN alias should reach LD1")
     require(status("lab-sup", "192.0.2.11")["name"] == "LD2", "Second WAN alias should reach LD2")
     for public, private in (("192.0.2.10", "10.20.0.11"), ("192.0.2.11", "10.20.0.12")):
         command("ip", "netns", "exec", "lab-gw", "iptables", "-t", "nat", "-C", "PREROUTING", "-i", "eth1", "-d", public, "-p", "tcp", "--dport", "10000", "-j", "DNAT", "--to-destination", f"{private}:10000")
-    if stage >= 7:
+    if stage >= 10:
         up("lab-led1", "eth0")
         require(
             "LD1" in status("lab-sup", "192.0.2.11")["alerted_global"],
@@ -127,8 +149,8 @@ def verify(stage):
 
 if __name__ == "__main__":
     stage = int(sys.argv[1])
-    if stage not in range(1, 8):
-        sys.exit("Expected a step number from 1 to 7")
+    if stage not in range(1, 11):
+        sys.exit("Expected a step number from 1 to 10")
     for attempt in range(5):
         try:
             verify(stage)

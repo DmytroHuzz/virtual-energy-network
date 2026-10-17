@@ -4,13 +4,16 @@
   "details": {
     "intro": {"text": "intro.md", "background": "background.sh", "foreground": "foreground.sh"},
     "steps": [
-      {"title": "1. Give each device its own network", "text": "steps/01.md", "verify": "checks/01.sh"},
-      {"title": "2. Wire the sensor LAN", "text": "steps/02.md", "verify": "checks/02.sh"},
-      {"title": "3. Follow a measurement to an alarm", "text": "steps/03.md", "verify": "checks/03.sh"},
-      {"title": "4. Add a second bay and operator LAN", "text": "steps/04.md", "verify": "checks/04.sh"},
-      {"title": "5. Route supervisor requests", "text": "steps/05.md", "verify": "checks/05.sh"},
-      {"title": "6. Publish status through destination NAT", "text": "steps/06.md", "verify": "checks/06.sh"},
-      {"title": "7. Break, observe, repair", "text": "steps/07.md", "verify": "checks/07.sh"}
+      {"title": "1. Give each device its own network view", "text": "steps/01.md", "verify": "checks/01.sh"},
+      {"title": "2. Follow both ends of a veth cable", "text": "steps/02.md", "verify": "checks/02.sh"},
+      {"title": "3. Join devices with a Linux bridge", "text": "steps/03.md", "verify": "checks/03.sh"},
+      {"title": "4. Follow a measurement to an alarm", "text": "steps/04.md", "verify": "checks/04.sh"},
+      {"title": "5. Build a separate second bay", "text": "steps/05.md", "verify": "checks/05.sh"},
+      {"title": "6. Connect the operator LAN", "text": "steps/06.md", "verify": "checks/06.sh"},
+      {"title": "7. Cable and address the supervisor network", "text": "steps/07.md", "verify": "checks/07.sh"},
+      {"title": "8. Route requests and replies", "text": "steps/08.md", "verify": "checks/08.sh"},
+      {"title": "9. Observe destination NAT", "text": "steps/09.md", "verify": "checks/09.sh"},
+      {"title": "10. Diagnose and repair faults", "text": "steps/10.md", "verify": "checks/10.sh"}
     ],
     "finish": {"text": "finish.md"},
     "assets": {

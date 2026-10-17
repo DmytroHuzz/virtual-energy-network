@@ -8,6 +8,8 @@ Edit the programs directly in `virtual-energy-network/assets/`. They are both th
 
 The supported runtime is disposable Ubuntu 24.04 with root access. The applications require Python 3.10 or later and use only its standard library. Raw Ethernet sockets and namespace operations require Linux and elevated privileges. Source validation and packaging also work on macOS.
 
+The ten lessons assume basic networking and energy-industry context, but no Linux namespace experience. Keep the first examples explicit: show ownership, movement, bridge membership and expected state before introducing the next abstraction. The sequence separates a veth pair from a bridge, bay 2 from the operator LAN, and WAN cabling from routing. Each checkpoint matches the topology that exists at that point; it must not require a later lesson's objects.
+
 ## Validate and package
 
 From the repository root:
@@ -17,7 +19,7 @@ python3 killercoda/validate.py
 python3 killercoda/build.py
 ```
 
-Validation checks manifest references, asset delivery, local Markdown links, Python and Bash syntax, CLI entry points and the seven checkpoint wrappers. It extracts the executable lesson blocks into `dist/walkthrough.sh`. Packaging runs validation and creates `dist/virtual-energy-network.tar.gz`. Generated outputs and runtime files are ignored by Git.
+Validation checks manifest references, asset delivery, local Markdown links, Python and Bash syntax (including instructional examples), CLI entry points and the ten checkpoint wrappers. It extracts only executable lesson blocks into `dist/walkthrough.sh`; inspection-only examples are not executed. Packaging runs validation and creates `dist/virtual-energy-network.tar.gz`. Generated outputs and runtime files are ignored by Git.
 
 GitHub Actions runs static validation on pushes and pull requests. Static checks cannot prove packet forwarding; run the walkthrough after changing programs, topology commands or checkpoints.
 
@@ -35,7 +37,9 @@ bash /root/scenario-source/virtual-energy-network/background.sh
 bash walkthrough.sh
 ```
 
-The walkthrough executes learner commands and runs every checkpoint. It also verifies that an empty topology, a disconnected LED interface and a missing return route fail, then restores the network. Packet captures are bounded; the NAT capture runs alongside a supervisor query so both interfaces show traffic.
+The walkthrough executes learner commands and runs every checkpoint. It also verifies that an empty topology, a disabled veth end, a disconnected LED interface and a missing return route fail, then restores the network. Packet captures are bounded; the two-terminal NAT capture is automated alongside a supervisor query so both interfaces show traffic.
+
+Lesson 9 deliberately removes the supervisor's direct route to the private subnet after proving routed connectivity in lesson 8. NAT-stage checks must query the WAN aliases, not depend on the removed client route. Logical-device return routes remain required.
 
 Checkpoints inspect links, processes, LED logs, multicast-derived alarm state, TCP responses and NAT rules. They retry briefly for sensor publication. They do not grade prose answers or prove every isolation property. After testing, use `bash /root/energy-lab/lab.sh reset` to leave a clean environment.
 
@@ -59,12 +63,15 @@ For another creator profile, register your own repository and branch, add its re
 
 The sensor publishes once per second. Measurements at or above the threshold trigger an alarm. Logical devices repeatedly publish their local state and track received operator alarms separately; a remote alarm does not drive the local LED. Status queries use timeouts and handle TCP segmentation. Shared logical-device state is protected by a lock.
 
-The raw-socket listeners can exit when their interface goes down. Lesson 7 demonstrates that repairing a link may also require restarting an application. The example has no reliable delivery, state expiry or listener-health reporting; those are useful follow-up exercises.
+The raw-socket listeners can exit when their interface goes down. Lesson 10 demonstrates that repairing a link may also require restarting an application. The example has no reliable delivery, state expiry or listener-health reporting; those are useful follow-up exercises.
 
 ## References
 
 - [Killercoda creator documentation](https://killercoda.com/creators)
 - [Killercoda repository setup](https://killercoda.com/creators/get-started)
 - [Linux network namespaces manual](https://www.man7.org/linux/man-pages/man7/network_namespaces.7.html)
+- [Running programs in network namespaces](https://man7.org/linux/man-pages/man8/ip-netns.8.html)
+- [Linux route management](https://man7.org/linux/man-pages/man8/ip-route.8.html)
+- [iptables tables, chains and rule syntax](https://man7.org/linux/man-pages/man8/iptables.8.html)
 - [Link-local IPv4 multicast scope, RFC 5771 section 4](https://www.rfc-editor.org/rfc/rfc5771.html#section-4)
 - [Netfilter destination NAT explanation](https://www.netfilter.org/documentation/HOWTO/NAT-HOWTO-6.html)
