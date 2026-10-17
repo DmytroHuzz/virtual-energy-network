@@ -1,0 +1,19 @@
+{
+  "title": "Build an energy network with Linux",
+  "description": "From a sensor LAN to interconnected bays and supervisor access: namespaces, veth, bridges, multicast, routing and NAT.",
+  "details": {
+    "intro": {"text": "intro.md", "background": "background.sh", "foreground": "foreground.sh"},
+    "steps": [
+      {"title": "1. Give each device its own network", "text": "steps/01.md", "verify": "checks/01.sh"},
+      {"title": "2. Wire the sensor LAN", "text": "steps/02.md", "verify": "checks/02.sh"},
+      {"title": "3. Follow a measurement to an alarm", "text": "steps/03.md", "verify": "checks/03.sh"},
+      {"title": "4. Add a second bay and operator LAN", "text": "steps/04.md", "verify": "checks/04.sh"},
+      {"title": "5. Route supervisor requests", "text": "steps/05.md", "verify": "checks/05.sh"},
+      {"title": "6. Publish status through destination NAT", "text": "steps/06.md", "verify": "checks/06.sh"},
+      {"title": "7. Break, observe, repair", "text": "steps/07.md", "verify": "checks/07.sh"}
+    ],
+    "finish": {"text": "finish.md"},
+    "assets": {"host01": [{"file": "*", "target": "/root/energy-lab/"}]}
+  },
+  "backend": {"imageid": "ubuntu"}
+}
