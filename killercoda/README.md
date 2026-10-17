@@ -1,5 +1,7 @@
 # Linux virtual networking for energy developers
 
+[Start the published tutorial](https://killercoda.com/dmytrohuzz/course/killercoda/virtual-energy-network) · [GitHub repository](https://github.com/DmytroHuzz/virtual-energy-network)
+
 The scenario in `virtual-energy-network/` follows the three stages in the project README: one Sensor LAN, multiple LANs connected through logical devices, and supervisor access through a translating gateway.
 
 Seven checkpoints cover namespaces, veth and bridges, Ethernet alarm traffic, operator IP multicast, routing, DNAT and troubleshooting. Learners type or click the actual network commands. Only package installation and file delivery are automated. Runtime helpers start/stop Python applications, change input values and query status; they do not create the topology.

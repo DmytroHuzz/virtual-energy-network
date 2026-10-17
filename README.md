@@ -1,3 +1,9 @@
+# Virtual energy network
+
+[Start the hands-on Killercoda tutorial](https://killercoda.com/dmytrohuzz/course/killercoda/virtual-energy-network)
+
+For the seven-step lesson, build instructions and instructor notes, see [killercoda/README.md](killercoda/README.md).
+
 ==============================
 Intro
 ==============================

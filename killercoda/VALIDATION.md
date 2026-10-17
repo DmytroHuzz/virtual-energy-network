@@ -12,4 +12,8 @@ Validated on 17 October 2026 in a fresh Killercoda Ubuntu 24.04 playground.
 
 The live test exposed that a raw socket listener can exit with `Network is down`. Lesson 7 now includes process restart as part of recovery.
 
-This validates runtime behavior in a playground. The scenario has not yet been committed or published to a creator repository. Native Killercoda asset delivery, lesson rendering and Check-button integration still need a smoke test after publication. Classroom pacing and learner comprehension need a human pilot.
+Published to [GitHub](https://github.com/DmytroHuzz/virtual-energy-network) and [Killercoda](https://killercoda.com/dmytrohuzz/course/killercoda/virtual-energy-network) on 17 October 2026.
+
+The published scenario passed a native smoke test: assets arrived in `/root/energy-lab`, the background installer and foreground readiness script completed, Markdown rendered with executable command blocks, and the native Check button rejected an unbuilt topology. Clicking the namespace exercise created the expected namespaces; Check then advanced to lesson 2. The full seven-step runtime walkthrough was tested separately as described above.
+
+The GitHub repository uses a read-only Killercoda deploy key and an authenticated push webhook for updates. Classroom pacing and learner comprehension still need a human pilot.
