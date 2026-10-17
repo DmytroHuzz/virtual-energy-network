@@ -10,6 +10,17 @@ The supported runtime is disposable Ubuntu 24.04 with root access. The applicati
 
 The ten lessons assume basic networking and energy-industry context, but no Linux namespace experience. Keep the first examples explicit: show ownership, movement, bridge membership and expected state before introducing the next abstraction. The sequence separates a veth pair from a bridge, bay 2 from the operator LAN, and WAN cabling from routing. Each checkpoint matches the topology that exists at that point; it must not require a later lesson's objects.
 
+Each lesson opens with a **Where we are** diagram showing the topology at the start of that step, after completing the preceding steps. It is a reference snapshot, not a live view. Show only existing objects, including unattached veth ends, and distinguish cabling from working routes and NAT. The goal below the diagram explains what the current step adds.
+
+The committed PNGs live in `virtual-energy-network/steps/images/` and use relative Markdown links supported by Killercoda. They are included in the scenario archive, but are not copied into the learner's `/root/energy-lab` application directory. Regenerate them after topology or lesson-sequence changes:
+
+```bash
+python3 -m pip install 'Pillow>=10.1'
+python3 killercoda/draw_topologies.py
+```
+
+Pillow is only a maintainer dependency for drawing the images; learners, validation and packaging use the committed files without it. Inspect the diagrams after regeneration, including the difference between steps 8, 9 and 10: identical links, but different routing and NAT state.
+
 ## Validate and package
 
 From the repository root:

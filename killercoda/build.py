@@ -21,6 +21,7 @@ def main():
         )
     for asset in details["assets"]["host01"]:
         sources.update((SCENARIO / "assets").glob(asset["file"]))
+    sources.update((SCENARIO / "steps" / "images").glob("*.png"))
     archive = ROOT / "dist" / "virtual-energy-network.tar.gz"
     with tarfile.open(archive, "w:gz") as bundle:
         for source in sorted(sources):

@@ -24,6 +24,8 @@ Here a **bay** means one repeated sensor/device/indicator subsystem. **LD1** and
 
 ## How to use the lesson
 
+Each step opens with a **Where we are** diagram showing the expected topology before that step's commands, assuming you completed the previous steps. These are reference snapshots, not live views. The goal below each diagram explains what you will add or investigate next. Later diagrams distinguish working cables from configured routing and NAT, even when the connections look the same.
+
 Allow about **45–60 minutes for the guided path**, with more time for optional exploration. Watch Killercoda's expiry timer. A fresh session starts with an empty topology, so keep notes if you plan to continue later or use your own Linux VM.
 
 For an unhurried local session, the [closing lesson's VM setup](https://github.com/DmytroHuzz/virtual-energy-network/blob/main/killercoda/virtual-energy-network/finish.md#continue-on-your-own-linux-machine) prepares the same files on Ubuntu so you can follow these commands without the browser timer.

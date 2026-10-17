@@ -31,6 +31,7 @@ Every lesson includes a goal, small command blocks, expected observations, reaso
 killercoda/
   README.md                      # Maintainer and validation instructions
   build.py                       # Package the scenario
+  draw_topologies.py             # Render lesson-start topology snapshots
   validate.py                    # Validate source and generate a walkthrough
   virtual-energy-network/
     index.json                   # Killercoda scenario definition
